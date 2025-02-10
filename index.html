@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>拼图游戏 - 赢取优惠码</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      color: #333;
+    }
+    .game-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .puzzle-container {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-gap: 5px;
+    }
+    .puzzle-piece {
+      width: 100px;
+      height: 100px;
+      background-size: 300px 300px;
+      cursor: pointer;
+      border: 2px solid #ccc;
+    }
+    .puzzle-piece.dragging {
+      opacity: 0.5;
+    }
+    .thumbnail {
+      width: 150px;
+      height: 150px;
+      border: 2px solid #333;
+    }
+    .congrats {
+      display: none;
+      margin-top: 20px;
+      font-size: 1.5em;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <h1>拼图游戏 - 赢取优惠码</h1>
+  <p>将拼图完成即可获得思考者云的优惠码！</p>
+  <p>思考者云，智者的翅膀！传送门：<a href="https://skzcloud.com" alt="思考者云官网">思考者云官网</a> 官方域名：<a href="https://skzcloud.com" alt="思考者云官网">skzcloud.com</a></p>
+  <div class="game-container">
+    <div class="puzzle-container" id="puzzle-container">
+      <!-- 拼图块会通过JavaScript动态生成 -->
+    </div>
+    <img class="thumbnail" id="thumbnail" src="https://live.staticflickr.com/65535/54318413013_8b62603661_n.jpg?text=Puzzle+Image" alt="拼图参考图">
+  </div>
+  <div class="congrats" id="congrats">
+    恭喜你完成拼图！你的优惠码是：<strong>bestskzcloud80</strong>
+  </div>
+
+  <script>
+    // 拼图图片URL（可以替换成任意图片）
+    const imageUrl = "https://live.staticflickr.com/65535/54318413013_8b62603661_n.jpg?text=Puzzle+Image";
+    const puzzleContainer = document.getElementById('puzzle-container');
+    const thumbnail = document.getElementById('thumbnail');
+    const congratsMessage = document.getElementById('congrats');
+    let pieces = [];
+
+    // 初始化拼图
+    function initPuzzle() {
+      for (let i = 0; i < 9; i++) {
+        const piece = document.createElement('div');
+        piece.classList.add('puzzle-piece');
+        piece.style.backgroundImage = `url(${imageUrl})`;
+        piece.style.backgroundPosition = `${-(i % 3) * 100}px ${-Math.floor(i / 3) * 100}px`;
+        piece.dataset.index = i;
+        piece.draggable = true;
+        piece.addEventListener('dragstart', dragStart);
+        piece.addEventListener('dragover', dragOver);
+        piece.addEventListener('drop', dragDrop);
+        puzzleContainer.appendChild(piece);
+        pieces.push(piece);
+      }
+      shufflePieces();
+    }
+
+    // 打乱拼图
+    function shufflePieces() {
+      const indices = pieces.map((piece, index) => index);
+      for (let i = indices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [indices[i], indices[j]] = [indices[j], indices[i]];
+      }
+      pieces.forEach((piece, index) => {
+        const randomIndex = indices[index];
+        const x = (randomIndex % 3) * 100;
+        const y = Math.floor(randomIndex / 3) * 100;
+        piece.style.backgroundPosition = `${-x}px ${-y}px`;
+      });
+    }
+
+    // 拖动开始
+    function dragStart(e) {
+      e.dataTransfer.setData('text/plain', e.target.dataset.index);
+      e.target.classList.add('dragging');
+    }
+
+    // 拖动经过
+    function dragOver(e) {
+      e.preventDefault();
+    }
+
+    // 拖动放下
+    function dragDrop(e) {
+      e.preventDefault();
+      const fromIndex = e.dataTransfer.getData('text/plain');
+      const toIndex = e.target.dataset.index;
+      swapPieces(fromIndex, toIndex);
+      checkCompletion();
+    }
+
+    // 交换拼图块
+    function swapPieces(fromIndex, toIndex) {
+      const fromPiece = pieces[fromIndex];
+      const toPiece = pieces[toIndex];
+      const fromBackground = fromPiece.style.backgroundPosition;
+      const toBackground = toPiece.style.backgroundPosition;
+      fromPiece.style.backgroundPosition = toBackground;
+      toPiece.style.backgroundPosition = fromBackground;
+    }
+
+    // 检查拼图是否完成
+    function checkCompletion() {
+      const isComplete = pieces.every((piece, index) => {
+        const expectedX = (index % 3) * 100;
+        const expectedY = Math.floor(index / 3) * 100;
+        const currentPosition = piece.style.backgroundPosition;
+        return currentPosition === `${-expectedX}px ${-expectedY}px`;
+      });
+      if (isComplete) {
+        congratsMessage.style.display = 'block';
+      }
+    }
+
+    // 初始化
+    initPuzzle();
+  </script>
+</body>
+</html>
